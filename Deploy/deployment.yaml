@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: whatsapp-gateway-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: whatsapp-gateway
+  template:
+    metadata:
+      labels:
+        app: whatsapp-gateway
+    spec:
+      containers:
+      - name: whatsapp-gateway
+        image: registry.m34lnetwork.co.id/app/whatsapp-gateway
+        ports:
+        - containerPort: 5001

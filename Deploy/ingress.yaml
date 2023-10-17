@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: whatsapp-gateway-ingress
+spec:
+  rules:
+  - host: example.com  # Ganti dengan domain atau alamat IP Anda
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: whatsapp-gateway-service
+            port:
+              number: 80
