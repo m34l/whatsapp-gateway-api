@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: whatsapp-gateway-deployment
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: whatsapp-gateway
