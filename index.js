@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const http = require("http");
 const path = require("path");
+const fs = require("fs");
 const MainRouter = require("./app/routers");
 const errorHandlerMiddleware = require("./app/middlewares/error_middleware");
 const whatsapp = require("wa-multi-session");
@@ -21,6 +22,15 @@ app.set("view engine", "ejs");
 // Public Path
 app.use("/p", express.static(path.resolve("public")));
 app.use("/p/*", (req, res) => res.status(404).send("Media Not Found"));
+app.get("/", (req, res) => {
+    fs.readFile(path.resolve(__dirname, "sandbox.html"), "utf8", (err, data) => {
+        if (err) {
+            res.status(500).send("Internal Server Error");
+        } else {
+            res.send(data);
+        }
+    });
+});
 
 app.use(MainRouter);
 
@@ -34,15 +44,15 @@ server.on("listening", () => console.log("APP IS RUNNING ON PORT " + PORT));
 server.listen(PORT);
 
 whatsapp.onConnected((session) => {
-  console.log("connected => ", session);
+    console.log("connected => ", session);
 });
 
 whatsapp.onDisconnected((session) => {
-  console.log("disconnected => ", session);
+    console.log("disconnected => ", session);
 });
 
 whatsapp.onConnecting((session) => {
-  console.log("connecting => ", session);
+    console.log("connecting => ", session);
 });
 
 whatsapp.loadSessionsFromStorage();

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+        integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+    <title>M34L - Whatsapp Gateway SandBox</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        .form-container input[type="text"] {
+            margin-bottom: 10px;
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        .form-container select {
+            margin-bottom: 10px;
+            padding: 8px;
+            font-size: 16px;
+        }
+
+        .form-container button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .form-container textarea {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .additional-input {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container">
+
+        <select id="operationSelect" onchange="showAdditionalInput()">
+            <option value="">Pilih operasi...</option>
+            <option value="start-session">Start Session</option>
+            <option value="send-message">Send Message</option>
+            <option value="send-bulk-message">Send Bulk Message</option>
+            <option value="delete-session">Delete Session</option>
+            <option value="sessions">Get all Sessions</option>
+        </select>
+        <div class="additional-input" id="additionalInputSessions">
+            <input type="text" id="session" placeholder="Nama Session">
+        </div>
+        <div class="additional-input" id="additionalInputSendMessage">
+            <input type="text" id="to" placeholder="To">
+            <input type="text" id="text" placeholder="Text">
+        </div>
+        <div class="additional-input" id="additionalInputBulkMessage">
+            <input type="text" id="data" placeholder="Data">
+            <input type="text" id="delay" placeholder="Delay">
+        </div>
+        <div class="additional-input" id="additionalInputKey">
+            <input type="text" id="key" placeholder="Key">
+        </div>
+        <div class="additional-input" id="additionalInputScan">
+            <input type="text" id="scan" placeholder="Scan ?? true : false">
+        </div>
+        <button onclick="showResult()">Submit</button>
+        <br>
+        <div class="result-box" id="resultBox"></div>
+        <textarea id="resultBoxHasil" width="400" height="400"></textarea>
+    </div>
+
+
+    <script>
+        function showAdditionalInput() {
+            var operationSelect = document.getElementById("operationSelect").value;
+            var additionalInputSendMessage = document.getElementById("additionalInputSendMessage");
+            var additionalInputBulkMessage = document.getElementById("additionalInputBulkMessage");
+
+            var additionalInputSessions = document.getElementById("additionalInputSessions");
+            var additionalInputKey = document.getElementById("additionalInputKey");
+            var additionalInputScan = document.getElementById("additionalInputScan");
+
+            additionalInputSendMessage.style.display = "none";
+            additionalInputBulkMessage.style.display = "none";
+
+            additionalInputSessions.style.display = "none";
+            additionalInputKey.style.display = "none";
+            additionalInputScan.style.display = "none";
+
+
+            if (operationSelect === "start-session") {
+                additionalInputSessions.style.display = "block";
+                additionalInputScan.style.display = "block";
+            } else if (operationSelect === "send-message") {
+                additionalInputSendMessage.style.display = "block";
+                additionalInputSessions.style.display = "block";
+            } else if (operationSelect === "send-bulk-message") {
+                additionalInputSessions.style.display = "block";
+                additionalInputBulkMessage.style.display = "block";
+            } else if (operationSelect === "delete-session") {
+                additionalInputSessions.style.display = "block";
+            } else if (operationSelect === "sessions") {
+                additionalInputKey.style.display = "block";
+            }
+        }
+
+        function showResult() {
+            var session = document.getElementById("session").value;
+            var operationSelect = document.getElementById("operationSelect").value;
+            var to = document.getElementById("to").value;
+            var text = document.getElementById("text").value;
+            var data = document.getElementById("data").value;
+            var delay = document.getElementById("delay").value;
+            var key = document.getElementById("key").value;
+            var scan = document.getElementById("scan").value;
+
+            var resultBox = document.getElementById("resultBox");
+            var resultBoxHasil = document.getElementById("resultBoxHasil");
+
+            if (operationSelect) {
+                if (operationSelect === "start-session") {
+                    $('#resultBoxHasil').val('Prosess...');
+                    resultBox.textContent = "Operasi: " + operationSelect + ", Session: " + session + ", Scan: " + scan;
+                    $.ajax({
+                        method: "POST",
+                        url: '/' + operationSelect,
+                        data: {
+                            session: session,
+                            scan: scan
+                        },
+                        dataType: "json",
+                    }).done(function (response) {
+                        try {
+                            var qrImageData = response.data.qr; // Mengambil data gambar QR dari respons JSON
+                            var imgTag = '<img src="' + qrImageData + '" alt="QR Code">'; // Membuat tag gambar
+                            $('#resultBox').html(imgTag); // Memasukkan tag gambar ke dalam <textarea>
+                        } catch (error) {
+                            $('#resultBoxHasil').val('Error: ' + error);
+                        }
+                    }).fail(function (jqXHR, textStatus, errorThrown) {
+                        $('#resultBoxHasil').val('Error: ' + textStatus + ' - ' + errorThrown);
+                    });
+                } else if (operationSelect === "send-message" && to && text) {
+                    resultBox.textContent = "Operasi: " + operationSelect + ", Session: " + session + ", To: " + to + ", Text: " + text;
+                    $('#resultBoxHasil').html('Prosess...');
+                    $.ajax({
+                        method: "POST",
+                        url: '/' + operationSelect,
+                        data: {
+                            session: session,
+                            to: to,
+                            text: text
+                        },
+                        dataType: "text",
+                    }).done(function (msg) {
+                        $('#resultBoxHasil').html(JSON.stringify(msg))
+                    })
+                } else if (operationSelect === "send-bulk-message" && session && data && delay) {
+                    resultBox.textContent = "Operasi: " + operationSelect + ", Session: " + session + ", Data: " + data + ", Delay: " + delay;
+                    $('#resultBoxHasil').html('Prosess...');
+                    $.ajax({
+                        method: "POST",
+                        url: '/' + operationSelect,
+                        data: {
+                            session: session,
+                            data: data,
+                            delay: delay
+                        },
+                        dataType: "text",
+                    }).done(function (msg) {
+                        $('#resultBoxHasil').html(JSON.stringify(msg))
+                    })
+                } else if (operationSelect === "delete-session" && session) {
+                    resultBox.textContent = "Operasi: " + operationSelect + ", Session: " + session;
+                    $.ajax({
+                        method: "POST",
+                        url: '/' + operationSelect,
+                        data: {
+                            session: session
+                        },
+                        dataType: "text",
+                    }).done(function (msg) {
+                        $('#resultBoxHasil').html(JSON.stringify(msg))
+                    })
+                } else if (operationSelect === "sessions" && key) {
+                    resultBox.textContent = "Operasi: " + operationSelect + ", Key: " + key;
+                    $.ajax({
+                        method: "POST",
+                        url: '/' + operationSelect,
+                        data: {
+                            key: key
+                        },
+                        dataType: "text",
+                    }).done(function (msg) {
+                        $('#resultBoxHasil').html(JSON.stringify(msg))
+                    })
+                } else {
+                    resultBox.textContent = "Silakan lengkapi formulir dengan benar.";
+                }
+            } else {
+                resultBox.textContent = "Silakan lengkapi formulir dengan benar.";
+            }
+
+            resultBox.style.display = "block";
+        }
+    </script>
+</body>
+
+</html>
