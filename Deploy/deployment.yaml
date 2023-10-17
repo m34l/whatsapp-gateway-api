@@ -17,3 +17,5 @@ spec:
         image: registry.m34lnetwork.co.id/app/whatsapp-gateway
         ports:
         - containerPort: 5001
+     imagePullSecrets:
+     - name: regcred
